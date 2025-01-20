@@ -22,55 +22,41 @@ const Player = function(initName, symbol, id) {
 
 // Game prototype
 const Game = function(playerOne, playerTwo) {
-    const board = [[".", ".", "."], [".", ".", "."], [".", ".", "."]];
+    const board = [".", ".", ".", ".", ".", ".", ".", ".", "."];
     const playerScore = [0, 0];
     let currentPlayer = playerOne;
     let moves = 0;
 
-    const getBoard = () => board.map(row => row.join(" ")).join("\n");
+    const getBoard = () => `${board[0]} ${board[1]} ${board[2]}\n${board[3]} ${board[4]} ${board[5]}\n${board[6]} ${board[7]} ${board[8]}`;
     const getCurrentPlayer = () => currentPlayer;
+    const getPlayers = () => [playerOne, playerTwo];
 
-    const placeSymbol = function([y, x], player) {
-        let symbolPlaced = false;
-        if (0 <= y && y <= 2 && 0 <= x && x <= 2 && board[y][x] == ".") {
-            board[y][x] = player.getID();
-            symbolPlaced = true;
-            moves += 1;
-            console.log(`${player.getSymbol()} placed at (${y}, ${x})`)
+    const placeSymbol = function(n, player) {
+        if (n < 0 || n > 8 || board[n] != ".") {
+            console.log(`ERROR - ${player.getSymbol()} could not be placed at (${n})`)
+            return false
         } else {
-            console.log(`ERROR - ${player.getSymbol()} could not be placed at (${y}, ${x})`)
+            board[n] = player.getSymbol();
+            moves += 1;
+            console.log(`${player.getSymbol()} placed at (${n})`)
+            return true
         }
-        return symbolPlaced
     }
 
     const checkWin = function(player){
-        let winnerID = -1;
-        let playerID = player.getID();
-        let matchID = (cell) => cell == playerID;
-    
-        // check rows
-        for (row of board) {
-            if (row.filter(cell => matchID(cell)).length === 3) {
-                winnerID = player.getID()
-            }
-        }
-
-        // check columns
-        for (let i = 0; i <= 2; i++) {
-            let currColumn = board.map(row => row[i])
-            if (currColumn.filter(cell => matchID(cell)).length === 3) {
+        let winnerID = -1
+        let winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                            [0, 4, 8], [2, 4, 6]]
+        
+        for (line of winningLines) {
+            if (line.map(n => board[n]).filter(symbol => symbol === player.getSymbol()).length === 3) {
                 winnerID = player.getID();
             }
         }
 
-        // check diagonal
-        if ([board[0][0], board[1][1], board[2][2]].filter(cell => matchID(cell)).length === 3 ||
-            [board[2][0], board[1][1], board[0][2]].filter(cell => matchID(cell)).length === 3) {
-                winnerID = player.getID();
-            }
-
-        // check if board is full (draw)
-        if (winnerID === -1 && moves === 9) {
+        // board full
+        if (moves == 9) {
             winnerID = 0;
         }
 
@@ -81,37 +67,40 @@ const Game = function(playerOne, playerTwo) {
         currentPlayer === playerOne ? currentPlayer = playerTwo : currentPlayer = playerOne;
     }
 
-    return {getBoard, getCurrentPlayer, placeSymbol, rotateCurrentPlayer, checkWin}
+    return {getBoard,
+            getCurrentPlayer,
+            getPlayers,
+            placeSymbol,
+            rotateCurrentPlayer,
+            checkWin}
 }
 
 // Main control
-const GameControl = (function() {
+const GameControl = function() {
     let myGame;
     
     // init
-    const init = function() {
-        let playerOneName = prompt("Player one: What's your name?");
-        let playerTwoName = prompt("Player two: What's your name?");
+    const init = function(playerOneName, playerTwoName) {
         myGame = Game(Player(playerOneName, "O", 1), Player(playerTwoName, "X", 2));
         this.playGame();
     }
 
     // loops rounds until winStatus is determined
     const playGame = function() {
-        let winStatus = -1;    // 0 = draw; 1 = playerOne wins; 2 = playerTwo wins; -1 = undertermined
-        while (winStatus === -1) {
-            winStatus = this.playRound();
-            console.log(winStatus)
+        let winnerID = -1;    // 0 = draw; 1 = playerOne wins; 2 = playerTwo wins; -1 = undertermined
+        while (winnerID === -1) {
+            winnerID = this.playRound();
+            console.log(winnerID)
         }
-        winStatus === 0 ? console.log("Draw - nobody won") : console.log(`${myGame.getCurrentPlayer().getName()} won`)
+        winnerID === 0 ? console.log("Draw - nobody won") : console.log(`${myGame.getCurrentPlayer().getName()} won`)
     }
     
     // returns win status of each round through checkWin()
     const playRound = function() {
         let coord, symbolPlaced;
         while (symbolPlaced != true) {
-            coord = prompt(`${myGame.getCurrentPlayer().getName()}'s move: [y x]`).split(" ");
-            symbolPlaced = myGame.placeSymbol([coord[0], coord[1]], myGame.getCurrentPlayer());
+            coord = prompt(`${myGame.getCurrentPlayer().getName()}'s move: [x]`);
+            symbolPlaced = myGame.placeSymbol(coord, myGame.getCurrentPlayer());
         }
         console.log(myGame.getBoard())
         roundResult = myGame.checkWin(myGame.getCurrentPlayer());
@@ -124,17 +113,35 @@ const GameControl = (function() {
         return roundResult;
     }
     
+    return {init, playGame, playRound}
+}
 
-    // player 1 places
-    // check for winning condtion
-    // switch current player to player 2
-    // player 2 places
-    // check for winning condtion
-    // switch current player to player 1
-    // repeat
+/*
+// Display control
+const DisplayControl = function() {
+    let game = GameControl();
+    
+    const startButton = document.body.querySelector("#start-game");
+    const dialog = document.body.querySelector("#names-entry");
 
+    const startGame = function() {
+        const nameInputs = document.body.querySelectorAll("input");
+        let [playerOneName, playerTwoName] = [...nameInputs].map(i => i.value.trim() || i.getAttribute("placeholder"));
+        dialog.close()
+        game.init(playerOneName, playerTwoName)
+    }
+    
+    startButton.addEventListener("click", startGame)
 
-    return {init, playRound, playGame}
-})()
+    
 
-GameControl.init()
+    return {startGame}
+}
+*/
+
+//// display render
+// players shown -> enter name with input
+// div.player {
+//     a.name
+//     p.score
+// }
