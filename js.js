@@ -47,19 +47,18 @@ const Game = function(playerOne, playerTwo) {
         let winnerID = -1
         let winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
-        // board full, will be overwritten if last move results in a winner
+        // board full, will be overwritten if last move results in a win
         if (moves == 9) {
             winnerID = 0;
         }
 
-        // check each line for winner
+        // check each line to match condition
         for (line of winningLines) {
             if (line.map(n => board[n]).filter(symbol => symbol === player.getSymbol()).length === 3) {
                 winnerID = player.getID();
             }
         }
 
-        
         return winnerID;
     }
 
@@ -100,7 +99,7 @@ const GameControl = function() {
         let coord, symbolPlaced;
         while (symbolPlaced != true) {
             coord = prompt(`${myGame.getCurrentPlayer().getName()}'s move: [x]`);
-            symbolPlaced = myGame.placeSymbol(coord, myGame.getCurrentPlayer());
+            symbolPlaced = this.placeSymbol(coord);
         }
         console.log(myGame.getBoard())
         roundResult = myGame.checkWin(myGame.getCurrentPlayer());
@@ -112,17 +111,25 @@ const GameControl = function() {
         }
         return roundResult;
     }
+
+    const placeSymbol = (n) => myGame.placeSymbol(n, myGame.getCurrentPlayer())
     
-    return {init, playGame, playRound}
+    return {init, playGame, playRound, placeSymbol}
 }
 
-/*
 // Display control
-const DisplayControl = function() {
+const DisplayControl = (function() {
     let game = GameControl();
     
-    const startButton = document.body.querySelector("#start-game");
-    const dialog = document.body.querySelector("#names-entry");
+    const startButton = document.getElementById("start-game");
+    const launchButton = document.getElementById("launch-game");
+    const dialog = document.getElementById("names-entry");
+    const titleScreen = document.body.querySelector(".title-screen");
+    
+    const launchGame = function() {
+        titleScreen.style.display = "none";
+        dialog.showModal();
+    }
 
     const startGame = function() {
         const nameInputs = document.body.querySelectorAll("input");
@@ -131,13 +138,14 @@ const DisplayControl = function() {
         game.init(playerOneName, playerTwoName)
     }
     
+    launchButton.addEventListener("click", launchGame)
     startButton.addEventListener("click", startGame)
+    
 
     
 
-    return {startGame}
-}
-*/
+    return {launchGame, startGame}
+})()
 
 //// display render
 // players shown -> enter name with input
@@ -145,3 +153,5 @@ const DisplayControl = function() {
 //     a.name
 //     p.score
 // }
+
+// click on cell => game.placeSymbol(cell.id)

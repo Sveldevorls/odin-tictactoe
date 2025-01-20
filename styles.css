@@ -16,16 +16,18 @@ body {
 body {
     font-family: 'Roboto', sans-serif;
     font-size: 1.1rem;
+    color: rgb(230, 230, 230);
 }
 
 dialog {
+    display: none;
     margin: auto auto;
     height: fit-content;
     width: fit-content;
     padding: 1em;
 }
 
-dialog {
+dialog[open] {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -42,4 +44,27 @@ dialog {
     display: grid;
     width: 80%;
     grid-template-columns: 2fr 0.5fr 2fr;
+}
+
+.title-screen {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    gap: 0.5lh;
+}
+
+button {
+    width: 10em;
+    height: 3lh;
+    border-radius: 1lh;
+    border: none;
+}
+
+.game-screen {
+    display: none;
 }

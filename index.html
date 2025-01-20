@@ -10,8 +10,16 @@
     <title>Tic Tac Toe</title>
 </head>
 <body>
+    <div class="title-screen">
+        <h1>Tic Tac Toe</h1>
+        <button id="launch-game">Launch game</button>
+    </div>
+    <div class="game-screen">
+        <div class="score-display"></div>
+        <div class="game"></div>
+    </div>
     <dialog id="names-entry">
-        <h2>Enter your names..</h2>
+        <h2>Enter your names</h2>
         <div class="dialog-inner">
             <label for="player-one">Player 1:</label>
             <input type="text" id="player-one" placeholder="Player one">
@@ -20,8 +28,6 @@
         </div>
         <button id="start-game">Start game</button>
     </dialog>
-    <div class="score-display"></div>
-    <div class="game"></div>
 </body>
 <script src="js.js"></script>
 </html>
