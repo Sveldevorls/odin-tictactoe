@@ -45,21 +45,21 @@ const Game = function(playerOne, playerTwo) {
 
     const checkWin = function(player){
         let winnerID = -1
-        let winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
-                            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                            [0, 4, 8], [2, 4, 6]]
-        
+        let winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+
+        // board full, will be overwritten if last move results in a winner
+        if (moves == 9) {
+            winnerID = 0;
+        }
+
+        // check each line for winner
         for (line of winningLines) {
             if (line.map(n => board[n]).filter(symbol => symbol === player.getSymbol()).length === 3) {
                 winnerID = player.getID();
             }
         }
 
-        // board full
-        if (moves == 9) {
-            winnerID = 0;
-        }
-
+        
         return winnerID;
     }
 
