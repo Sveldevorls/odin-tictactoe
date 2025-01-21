@@ -40,10 +40,11 @@ dialog[open] {
     gap: 0.5em;
 }
 
-.score-display {
+.score {
     display: grid;
     width: 80%;
-    grid-template-columns: 2fr 0.5fr 2fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 2em;
 }
 
 .title-screen {
@@ -58,6 +59,13 @@ dialog[open] {
     gap: 0.5lh;
 }
 
+.game-screen {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
 button {
     width: 10em;
     height: 3lh;
@@ -66,5 +74,23 @@ button {
 }
 
 .game-screen {
-    display: none;
+    visibility: hidden;
+}
+
+.score {
+    display: flex;
+    justify-content: center;
+}
+
+.player {
+    font-size: 1.2em;
+    padding: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2lh;
+    width: 16%;
+    background-color: rgb(68, 81, 104);
+    display: flex;
+    gap: 1em;
 }

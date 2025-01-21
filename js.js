@@ -23,7 +23,6 @@ const Player = function(initName, symbol, id) {
 // Game prototype
 const Game = function(playerOne, playerTwo) {
     const board = [".", ".", ".", ".", ".", ".", ".", ".", "."];
-    const playerScore = [0, 0];
     let currentPlayer = playerOne;
     let moves = 0;
 
@@ -121,10 +120,13 @@ const GameControl = function() {
 const DisplayControl = (function() {
     let game = GameControl();
     
-    const startButton = document.getElementById("start-game");
     const launchButton = document.getElementById("launch-game");
+    const startButton = document.getElementById("start-game");
+    
     const dialog = document.getElementById("names-entry");
     const titleScreen = document.body.querySelector(".title-screen");
+    const gameScreen = document.body.querySelector(".game-screen");
+    const scoreDiv = document.body.querySelector(".score");
     
     const launchGame = function() {
         titleScreen.style.display = "none";
@@ -133,9 +135,17 @@ const DisplayControl = (function() {
 
     const startGame = function() {
         const nameInputs = document.body.querySelectorAll("input");
-        let [playerOneName, playerTwoName] = [...nameInputs].map(i => i.value.trim() || i.getAttribute("placeholder"));
-        dialog.close()
-        game.init(playerOneName, playerTwoName)
+        let playerNames = [...nameInputs].map(i => i.value.trim() || i.getAttribute("placeholder"));
+        for (playerName of playerNames) {
+            let playerDiv = document.createElement("div");
+            playerDiv.className = "player"
+            playerDiv.innerHTML = `<p class="name">${playerName}</p><p>0</p>`
+            scoreDiv.appendChild(playerDiv);
+        }
+        
+        dialog.close();
+        gameScreen.style.visibility = "visible";
+        // game.init(playerNames[0], playerNames[1])
     }
     
     launchButton.addEventListener("click", launchGame)
