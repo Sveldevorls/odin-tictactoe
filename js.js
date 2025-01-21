@@ -26,18 +26,18 @@ const Game = function(playerOne, playerTwo) {
     let currentPlayer = playerOne;
     let moves = 0;
 
-    const getBoard = () => `${board[0]} ${board[1]} ${board[2]}\n${board[3]} ${board[4]} ${board[5]}\n${board[6]} ${board[7]} ${board[8]}`;
+    const getBoard = () => board;
     const getCurrentPlayer = () => currentPlayer;
     const getPlayers = () => [playerOne, playerTwo];
 
-    const placeSymbol = function(n, player) {
+    const placeSymbol = function(n) {
         if (n < 0 || n > 8 || board[n] != ".") {
-            console.log(`ERROR - ${player.getSymbol()} could not be placed at (${n})`)
+            console.log(`ERROR - ${this.getCurrentPlayer().getSymbol()} could not be placed at (${n})`)
             return false
         } else {
-            board[n] = player.getSymbol();
+            board[n] = this.getCurrentPlayer().getSymbol();
             moves += 1;
-            console.log(`${player.getSymbol()} placed at (${n})`)
+            console.log(`${this.getCurrentPlayer().getSymbol()} placed at (${n})`)
             return true
         }
     }
@@ -74,6 +74,7 @@ const Game = function(playerOne, playerTwo) {
 }
 
 // Main control
+/* 
 const GameControl = function() {
     let myGame;
     
@@ -94,10 +95,9 @@ const GameControl = function() {
     }
     
     // returns win status of each round through checkWin()
-    const playRound = function() {
-        let coord, symbolPlaced;
+    const playRound = function(n) {
+        let symbolPlaced;
         while (symbolPlaced != true) {
-            coord = prompt(`${myGame.getCurrentPlayer().getName()}'s move: [x]`);
             symbolPlaced = this.placeSymbol(coord);
         }
         console.log(myGame.getBoard())
@@ -115,11 +115,11 @@ const GameControl = function() {
     
     return {init, playGame, playRound, placeSymbol}
 }
+*/
 
 // Display control
 const DisplayControl = (function() {
-    let game = GameControl();
-    
+
     const launchButton = document.getElementById("launch-game");
     const startButton = document.getElementById("start-game");
     
@@ -127,6 +127,7 @@ const DisplayControl = (function() {
     const titleScreen = document.body.querySelector(".title-screen");
     const gameScreen = document.body.querySelector(".game-screen");
     const scoreDiv = document.body.querySelector(".score");
+    const gameboard = document.body.querySelector(".gameboard")
     
     const launchGame = function() {
         titleScreen.style.display = "none";
@@ -145,8 +146,29 @@ const DisplayControl = (function() {
         
         dialog.close();
         gameScreen.style.visibility = "visible";
-        // game.init(playerNames[0], playerNames[1])
-    }
+        let game = Game(Player(playerNames[0], "X", 0), Player(playerNames[1], "O", 1))
+        
+        for (i = 0; i <= 8; i++) {
+            let cell = document.createElement("div");
+            cell.id = i;
+            cell.innerText = ""
+            cell.className = "cell"
+            cell.addEventListener("click", (e) => {
+                let moveMade = game.placeSymbol(cell.id);
+                if (moveMade) {
+                    e.target.innerText = game.getCurrentPlayer().getSymbol();
+                    let winner = game.checkWin(game.getCurrentPlayer());
+                    if (winner === -1) {
+                        game.rotateCurrentPlayer();
+                    } else {
+                        console.log(`${playerNames[winner]} won`)
+                    }
+                    
+                }
+            })
+            gameboard.appendChild(cell);
+        }
+    }   
     
     launchButton.addEventListener("click", launchGame)
     startButton.addEventListener("click", startGame)
