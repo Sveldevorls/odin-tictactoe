@@ -120,6 +120,9 @@ const GameControl = function() {
 // Display control
 const DisplayControl = (function() {
 
+    let game;
+    let roundFinished = false;
+
     const launchButton = document.getElementById("launch-game");
     const startButton = document.getElementById("start-game");
     
@@ -138,45 +141,52 @@ const DisplayControl = (function() {
         const nameInputs = document.body.querySelectorAll("input");
         let playerNames = [...nameInputs].map(i => i.value.trim() || i.getAttribute("placeholder"));
         for (playerName of playerNames) {
-            let playerDiv = document.createElement("div");
-            playerDiv.className = "player"
-            playerDiv.innerHTML = `<p class="name">${playerName}</p><p>0</p>`
+            let playerDiv = newElement("div", ["className", "player"], ["innerHTML", `<p class="name">${playerName}</p><p>0</p>`]);
             scoreDiv.appendChild(playerDiv);
         }
         
         dialog.close();
         gameScreen.style.visibility = "visible";
-        let game = Game(Player(playerNames[0], "X", 0), Player(playerNames[1], "O", 1))
+        game = Game(Player(playerNames[0], "X", 1), Player(playerNames[1], "O", 2))
         
         for (i = 0; i <= 8; i++) {
-            let cell = document.createElement("div");
-            cell.id = i;
-            cell.innerText = ""
-            cell.className = "cell"
-            cell.addEventListener("click", (e) => {
-                let moveMade = game.placeSymbol(cell.id);
-                if (moveMade) {
-                    e.target.innerText = game.getCurrentPlayer().getSymbol();
-                    let winner = game.checkWin(game.getCurrentPlayer());
-                    if (winner === -1) {
-                        game.rotateCurrentPlayer();
-                    } else {
-                        console.log(`${playerNames[winner]} won`)
-                    }
-                    
+            let cell = newElement("div", ["id", i], ["innerText", ""], ["className", "cell"]);
+            cell.addEventListener("click", () => {
+                if (!roundFinished) {
+                    playMove(cell);
                 }
             })
             gameboard.appendChild(cell);
         }
     }   
+
+    const playMove = function(cell) {
+        let moveMade = game.placeSymbol(cell.id);
+        let winner = -1;
+        if (moveMade) {
+            cell.innerText = game.getCurrentPlayer().getSymbol();
+            winner = game.checkWin(game.getCurrentPlayer());
+            if (winner === -1) {
+                game.rotateCurrentPlayer();
+            } else {
+                roundFinished = true;
+                winner != 0 ? console.log(`${winner} won`) : console.log("Draw")
+            }
+        }
+    }
+
+    const newElement = function(type, ...attributesArr) {
+        let myElement = document.createElement(type);
+        if (attributesArr) {
+            for ([attribute, value] of attributesArr) {
+                myElement[attribute] = value;
+            }
+        }
+        return myElement
+    }
     
     launchButton.addEventListener("click", launchGame)
     startButton.addEventListener("click", startGame)
-    
-
-    
-
-    return {launchGame, startGame}
 })()
 
 //// display render

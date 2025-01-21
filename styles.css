@@ -80,16 +80,20 @@ button {
 }
 
 .player {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    align-items: center;
+    justify-items: center;
     font-size: 1.2em;
     padding: 0.5em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     height: 2lh;
-    width: 16%;
+    width: 20%;
     background-color: rgb(68, 81, 104);
-    display: flex;
     gap: 1em;
+}
+
+.name {
+    justify-self: start;
 }
 
 .gameboard {
