@@ -117,3 +117,7 @@ button {
     border: 1px solid greenyellow;
     box-shadow: 0 0 3px 3px greenyellow;
 }
+
+.status {
+    text-align: center;
+}

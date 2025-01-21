@@ -23,14 +23,14 @@ const Player = function(initName, symbol, id) {
 // Game prototype
 const Game = function(playerOneName, playerTwoName) {
     let [playerOne, playerTwo] = [Player(playerOneName, "X", 0), Player(playerTwoName, "O", 1)]
-    const board = [".", ".", ".", ".", ".", ".", ".", ".", "."];
+    let board = ["", "", "", "", "", "", "", "", ""];
     let currentPlayer = playerOne;
     let moves = 0;
 
     const getCurrentPlayer = () => currentPlayer;
 
     const placeSymbol = function(n) {
-        if (n < 0 || n > 8 || board[n] != ".") {
+        if (n < 0 || n > 8 || board[n] != "") {
             console.log(`ERROR - ${this.getCurrentPlayer().getSymbol()} could not be placed at (${n})`)
             return false
         } else {
@@ -42,32 +42,38 @@ const Game = function(playerOneName, playerTwoName) {
     }
 
     const checkWin = function(){
-        let winnerID = -1
+        let winStatus = -1   // -1 = undetermined, 0 = draw, 1 = win
         let winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
         // board full, will be overwritten if last move results in a win
         if (moves == 9) {
-            winnerID = 0;
+            winStatus = 0;
         }
 
         // check each line to match condition
         for (line of winningLines) {
             if (line.map(n => board[n]).filter(symbol => symbol === this.getCurrentPlayer().getSymbol()).length === 3) {
-                winnerID = 1;
+                winStatus = 1;
             }
         }
 
-        return winnerID;
+        return winStatus;
     }
 
     const rotateCurrentPlayer = function() {
         currentPlayer = (currentPlayer === playerOne) ? playerTwo : playerOne;
     }
 
+    const reset = function() {
+        board = ["", "", "", "", "", "", "", "", ""];
+        moves = 0;
+    }
+
     return {getCurrentPlayer,
             placeSymbol,
             rotateCurrentPlayer,
-            checkWin}
+            checkWin,
+            reset}
 }
 
 // Main control
@@ -119,7 +125,6 @@ const DisplayControl = (function() {
 
     let game;
     let roundFinished = false;
-    let winner = -1;
     let playerDivs = [];
 
     const launchButton = document.getElementById("launch-game");
@@ -129,30 +134,28 @@ const DisplayControl = (function() {
     const titleScreen = document.body.querySelector(".title-screen");
     const gameScreen = document.body.querySelector(".game-screen");
     const scoreDiv = document.body.querySelector(".score");
-    const gameboard = document.body.querySelector(".gameboard")
+    const gameboard = document.body.querySelector(".gameboard");
+    const status = document.body.querySelector(".status");
     
     const launchGame = function() {
         titleScreen.style.display = "none";
         dialog.showModal();
     }
 
-    // get player name => create player objects
-
     const startGame = function() {
         const nameInputs = document.body.querySelectorAll("input");
         let playerNames = [...nameInputs].map(i => i.value.trim() || i.getAttribute("placeholder"));
-
         for (playerName of playerNames) {
             let playerDiv = newElement("div", ["className", "player"], ["innerHTML", `<p class="name">${playerName}</p><p class="player-score">0</p>`]);
             playerDivs.push(playerDiv);
             scoreDiv.appendChild(playerDiv);
         }
-
+        game = Game(...playerNames);
         playerDivs[0].classList.toggle("active")
+        status.innerText = `${game.getCurrentPlayer().getName()}'s turn`
         
         dialog.close();
         gameScreen.style.visibility = "visible";
-        game = Game(playerNames[0], playerNames[1]);
         
         // Gameboard construction
         for (i = 0; i <= 8; i++) {
@@ -160,6 +163,8 @@ const DisplayControl = (function() {
             cell.addEventListener("click", () => {
                 if (!roundFinished) {
                     playMove(cell);
+                } else {
+                    restartGame();
                 }
             })
             gameboard.appendChild(cell);
@@ -167,20 +172,40 @@ const DisplayControl = (function() {
     }   
 
     const playMove = function(cell) {
+        let winStatus = -1;
         let moveMade = game.placeSymbol(cell.id);
         if (moveMade) {
             updateActive(getCurrentPlayerDiv())
             cell.innerText = game.getCurrentPlayer().getSymbol();
-            winner = game.checkWin(game.getCurrentPlayer());
-            if (winner === -1) {
+            winStatus = game.checkWin(game.getCurrentPlayer());
+            if (winStatus === -1) {
                 game.rotateCurrentPlayer();
+                status.innerText = `${game.getCurrentPlayer().getName()}'s turn`
                 updateActive(getCurrentPlayerDiv())
             } else {
                 roundFinished = true;
-                winner != 0 ? console.log(`${game.getCurrentPlayer().getName()} won`) : console.log("Draw")
-                if (winner === 1) updateScore(getCurrentPlayerDiv());
+                if (winStatus === 1) {
+                    status.innerText = `${game.getCurrentPlayer().getName()} won!\nClick on the board to restart`
+                    console.log(`${game.getCurrentPlayer().getName()} won`)
+                    updateScore(getCurrentPlayerDiv());
+                } else {
+                    status.innerText = "Draw\nClick on the board to restart"
+                    console.log("Draw")
+                }
             }
         }
+    }
+
+    const restartGame = function() {
+        game.reset();
+        game.rotateCurrentPlayer();
+        updateActive(getCurrentPlayerDiv())
+        
+        for (cell of gameboard.children) {
+            cell.innerText = "";
+        }
+        roundFinished = false;
+        status.innerText = `${game.getCurrentPlayer().getName()}'s turn`
     }
 
 
@@ -195,6 +220,7 @@ const DisplayControl = (function() {
 
     const getCurrentPlayerDiv = () => playerDivs[game.getCurrentPlayer().getID()];
 
+    // element constructor
     const newElement = function(type, ...attributesArr) {
         let myElement = document.createElement(type);
         if (attributesArr) {
