@@ -21,14 +21,13 @@ const Player = function(initName, symbol, id) {
 }
 
 // Game prototype
-const Game = function(playerOne, playerTwo) {
+const Game = function(playerOneName, playerTwoName) {
+    let [playerOne, playerTwo] = [Player(playerOneName, "X", 0), Player(playerTwoName, "O", 1)]
     const board = [".", ".", ".", ".", ".", ".", ".", ".", "."];
     let currentPlayer = playerOne;
     let moves = 0;
 
-    const getBoard = () => board;
     const getCurrentPlayer = () => currentPlayer;
-    const getPlayers = () => [playerOne, playerTwo];
 
     const placeSymbol = function(n) {
         if (n < 0 || n > 8 || board[n] != ".") {
@@ -42,7 +41,7 @@ const Game = function(playerOne, playerTwo) {
         }
     }
 
-    const checkWin = function(player){
+    const checkWin = function(){
         let winnerID = -1
         let winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
@@ -53,8 +52,8 @@ const Game = function(playerOne, playerTwo) {
 
         // check each line to match condition
         for (line of winningLines) {
-            if (line.map(n => board[n]).filter(symbol => symbol === player.getSymbol()).length === 3) {
-                winnerID = player.getID();
+            if (line.map(n => board[n]).filter(symbol => symbol === this.getCurrentPlayer().getSymbol()).length === 3) {
+                winnerID = 1;
             }
         }
 
@@ -62,12 +61,10 @@ const Game = function(playerOne, playerTwo) {
     }
 
     const rotateCurrentPlayer = function() {
-        currentPlayer === playerOne ? currentPlayer = playerTwo : currentPlayer = playerOne;
+        currentPlayer = (currentPlayer === playerOne) ? playerTwo : playerOne;
     }
 
-    return {getBoard,
-            getCurrentPlayer,
-            getPlayers,
+    return {getCurrentPlayer,
             placeSymbol,
             rotateCurrentPlayer,
             checkWin}
@@ -122,6 +119,8 @@ const DisplayControl = (function() {
 
     let game;
     let roundFinished = false;
+    let winner = -1;
+    let playerDivs = [];
 
     const launchButton = document.getElementById("launch-game");
     const startButton = document.getElementById("start-game");
@@ -137,18 +136,25 @@ const DisplayControl = (function() {
         dialog.showModal();
     }
 
+    // get player name => create player objects
+
     const startGame = function() {
         const nameInputs = document.body.querySelectorAll("input");
         let playerNames = [...nameInputs].map(i => i.value.trim() || i.getAttribute("placeholder"));
+
         for (playerName of playerNames) {
-            let playerDiv = newElement("div", ["className", "player"], ["innerHTML", `<p class="name">${playerName}</p><p>0</p>`]);
+            let playerDiv = newElement("div", ["className", "player"], ["innerHTML", `<p class="name">${playerName}</p><p class="player-score">0</p>`]);
+            playerDivs.push(playerDiv);
             scoreDiv.appendChild(playerDiv);
         }
+
+        playerDivs[0].classList.toggle("active")
         
         dialog.close();
         gameScreen.style.visibility = "visible";
-        game = Game(Player(playerNames[0], "X", 1), Player(playerNames[1], "O", 2))
+        game = Game(playerNames[0], playerNames[1]);
         
+        // Gameboard construction
         for (i = 0; i <= 8; i++) {
             let cell = newElement("div", ["id", i], ["innerText", ""], ["className", "cell"]);
             cell.addEventListener("click", () => {
@@ -162,18 +168,32 @@ const DisplayControl = (function() {
 
     const playMove = function(cell) {
         let moveMade = game.placeSymbol(cell.id);
-        let winner = -1;
         if (moveMade) {
+            updateActive(getCurrentPlayerDiv())
             cell.innerText = game.getCurrentPlayer().getSymbol();
             winner = game.checkWin(game.getCurrentPlayer());
             if (winner === -1) {
                 game.rotateCurrentPlayer();
+                updateActive(getCurrentPlayerDiv())
             } else {
                 roundFinished = true;
-                winner != 0 ? console.log(`${winner} won`) : console.log("Draw")
+                winner != 0 ? console.log(`${game.getCurrentPlayer().getName()} won`) : console.log("Draw")
+                if (winner === 1) updateScore(getCurrentPlayerDiv());
             }
         }
     }
+
+
+    // two updates -> switch .active and score update
+    const updateActive = function(playerDiv){
+        playerDiv.classList.toggle("active");
+    }
+
+    const updateScore = function(playerDiv){
+        playerDiv.children[1].innerText = parseInt(playerDiv.children[1].innerText, 10) + 1;
+    }
+
+    const getCurrentPlayerDiv = () => playerDivs[game.getCurrentPlayer().getID()];
 
     const newElement = function(type, ...attributesArr) {
         let myElement = document.createElement(type);

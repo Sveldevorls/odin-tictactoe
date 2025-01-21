@@ -112,3 +112,8 @@ button {
     background-color: white;
     border: 2px solid black;
 }
+
+.active {
+    border: 1px solid greenyellow;
+    box-shadow: 0 0 3px 3px greenyellow;
+}
