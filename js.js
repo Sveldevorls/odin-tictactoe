@@ -3,7 +3,7 @@
 // start game with init => creates a game session
 // mechanism for game end detection in winning condition logic
 // playGame = while not win {playRound}, show result
-// playRound returns win status (p1 win, p2 win, tie)
+// playRound returns win status (win/tie)
 
 
 // Player prototype
@@ -15,9 +15,8 @@ const Player = function(initName, symbol, id) {
     const getName = () => playerName;
     const getSymbol = () => playerSymbol;
     const getID = () => playerID;
-    //const setName = (newName) => playerName = newName;
 
-    return {getName, getSymbol, getID} //setName
+    return {getName, getSymbol, getID} 
 }
 
 // Game prototype
@@ -75,50 +74,6 @@ const Game = function(playerOneName, playerTwoName) {
             checkWin,
             reset}
 }
-
-// Main control
-/* 
-const GameControl = function() {
-    let myGame;
-    
-    // init
-    const init = function(playerOneName, playerTwoName) {
-        myGame = Game(Player(playerOneName, "O", 1), Player(playerTwoName, "X", 2));
-        this.playGame();
-    }
-
-    // loops rounds until winStatus is determined
-    const playGame = function() {
-        let winnerID = -1;    // 0 = draw; 1 = playerOne wins; 2 = playerTwo wins; -1 = undertermined
-        while (winnerID === -1) {
-            winnerID = this.playRound();
-            console.log(winnerID)
-        }
-        winnerID === 0 ? console.log("Draw - nobody won") : console.log(`${myGame.getCurrentPlayer().getName()} won`)
-    }
-    
-    // returns win status of each round through checkWin()
-    const playRound = function(n) {
-        let symbolPlaced;
-        while (symbolPlaced != true) {
-            symbolPlaced = this.placeSymbol(coord);
-        }
-        console.log(myGame.getBoard())
-        roundResult = myGame.checkWin(myGame.getCurrentPlayer());
-
-        // dont rotate current player if winning status is determined
-        // used to log winning message, rotation should be done in resetGame()
-        if (roundResult === -1) {
-            myGame.rotateCurrentPlayer();
-        }
-        return roundResult;
-    }
-
-    const placeSymbol = (n) => myGame.placeSymbol(n, myGame.getCurrentPlayer())
-    
-    return {init, playGame, playRound, placeSymbol}
-}
-*/
 
 // Display control
 const DisplayControl = (function() {
@@ -234,12 +189,3 @@ const DisplayControl = (function() {
     launchButton.addEventListener("click", launchGame)
     startButton.addEventListener("click", startGame)
 })()
-
-//// display render
-// players shown -> enter name with input
-// div.player {
-//     a.name
-//     p.score
-// }
-
-// click on cell => game.placeSymbol(cell.id)
